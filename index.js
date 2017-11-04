@@ -44,6 +44,10 @@ app.all('/', function (req, res) {
 })
 
 app.get('/factions', factionsDataHandler.display)
+app.get('/factions/refresh', function () {
+    console.log("Factions data are updating...")
+    factionsDataHandler.generate()
+})
 app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', factionsDataHandler.displayFaction)
 app.get('/factions/:name([A-Za-z0-9-_]+)', factionsDataHandler.displayFaction)
 app.get('/factions/search/user/:username', factionsDataHandler.searchUser)

@@ -37,6 +37,7 @@ module.exports = {
                         result.id = faction._id.toString()
                         result.name = faction.name
                         result.description = faction.description || null
+                        result.created_at = new Date(faction.createdAtMillis)
 
                         // Get players
                         mongoDatabase.collection('factions_mplayer').find({"factionId": result.id}).toArray(function (err, players) {
