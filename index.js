@@ -58,7 +58,7 @@ app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 // TODO :
 // app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', usersDataHandler.displayUser)
 // app.get('/users/:name([A-Za-z0-9-_]+)', usersDataHandler.displayUser)
-// app.get('/users/:uuid/success', successDataHandler.user)
+app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/success', successDataHandler.user)
 
 // ==========
 // HANDLE WEB
