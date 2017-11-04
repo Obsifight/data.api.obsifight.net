@@ -52,8 +52,8 @@ app.get('/factions/refresh', function () {
 app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', factionsDataHandler.displayFaction)
 app.get('/factions/:name([A-Za-z0-9-_]+)', factionsDataHandler.displayFaction)
 app.get('/factions/search/user/:username', factionsDataHandler.searchUser)
-app.get('/factions/:factionId/success', successDataHandler.faction)
-app.get('/factions/:factionId/graph', factionGraphDataHandler.displayFaction) // ressources
+app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/success', successDataHandler.faction)
+app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/graph', factionGraphDataHandler.displayFaction) // ressources
 
 // TODO :
 // app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', usersDataHandler.displayUser)

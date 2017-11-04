@@ -1,5 +1,5 @@
 var databases = require('../config/db')
-var _ = require('_')
+var _ = require('underscore')
 var async = require('async')
 var successList = [
     {
@@ -10,10 +10,10 @@ var successList = [
             databases.getMysql('logblock').query("SELECT onlinetime AS onlinetime FROM lb-players WHERE UUID = ?", [uuid], function (err, rows) {
                 if (err) {
                     console.error(err)
-                    next(0)
+                    return next(0)
                 }
                 if (rows.length === 0)
-                    next(0)
+                    return next(0)
                 next(rows[0].onlinetime)
                 databases.closeMysql('logblock')
             })
@@ -27,10 +27,10 @@ var successList = [
             databases.getMysql('killstats').query("SELECT kills AS kills FROM obsikillstats_st WHERE player = ?", [uuid], function (err, rows) {
                 if (err) {
                     console.error(err)
-                    next(0)
+                    return next(0)
                 }
                 if (rows.length === 0)
-                    next(0)
+                    return next(0)
                 next(rows[0].kills)
                 databases.closeMysql('killstats')
             })
@@ -96,10 +96,10 @@ var successList = [
             function (err, rows) {
                 if (err) {
                     console.error(err)
-                    next(0)
+                    return next(0)
                 }
                 if (rows.length === 0)
-                    next(0)
+                    return next(0)
                 next(rows[0].money)
                 databases.closeMysql('economy')
             })
@@ -121,7 +121,7 @@ var result = {
 var getSuccessPercentagesFromUser = function (uuid, next, type) {
     if (type === undefined)
         type = 'user'
-    var successTypeList = _.find(successList, function(success) {
+    var successTypeList = _.filter(successList, function(success) {
         return success.type.indexOf(type) !== -1;
     })
     var result = {}
@@ -153,7 +153,7 @@ var getSuccessPercentagesFromFaction = function (factionId, next) {
     var result = {}
 
     databases.getMongo(function (mongoDatabase) {
-        mongoDatabase.collection('factions_mplayer').find({"factionId": factionId}, function (err, players) {
+        mongoDatabase.collection('factions_mplayer').find({"factionId": factionId}).toArray(function (err, players) {
             if (err) {
                 console.error(err)
                 next(result)
@@ -161,12 +161,29 @@ var getSuccessPercentagesFromFaction = function (factionId, next) {
 
             async.each(players, function (player, callback) {
                 getSuccessPercentagesFromUser(player._id.toString(), function (successList) {
-                    result = Object.assign(result, successList)
+
+                    // merge add
+                    for (name in successList) {
+                        if (typeof successList[name] === 'boolean' && successList[name])
+                            result[name] = true
+                        else {
+                            if (result[name] === undefined)
+                                result[name] = {}
+                            for (value in successList[name]) {
+                                if (result[name][value] !== undefined)
+                                    result[name][value] += successList[name][value]
+                                else
+                                    result[name][value] = successList[name][value]
+                            }
+                        }
+                    }
+
                     callback()
                 }, 'faction')
             }, function (err) {
                 if (err)
                     console.error(err)
+                next(result)
             })
             databases.closeMongo()
         })
