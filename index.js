@@ -39,7 +39,7 @@ app.all('/', function (req, res) {
     res.json({
         name: 'ObsiFight Data Server',
         author: 'Eywek',
-        version: require('fs').readSync('./VERSION').trim()
+        version: require('fs').readFileSync('./VERSION').toString().trim()
     })
 })
 

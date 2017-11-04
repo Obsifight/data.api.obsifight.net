@@ -1,5 +1,5 @@
-var databases = require('../config/db')
-var config = require('../config/config')
+var databases = require('../../config/db')
+var config = require('../../config/config')
 var async = require('async')
 var _ = require('underscore')
 var DatatableQueryBuilder = require('node-datatable')
