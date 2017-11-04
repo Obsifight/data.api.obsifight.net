@@ -225,10 +225,19 @@ module.exports = {
 
     displayFaction: function (req, res) {
         // Check request
-        var factionId = req.params.factionId
+        var key, value
+        if (req.params.factionId) {
+            key = 'id'
+            value = req.params.factionId
+        } else if (req.params.name) {
+            key = 'name'
+            value = req.params.name
+        } else {
+            return res.status(404)
+        }
 
         // Find faction on cache
-        databases.getMysql('cache').query('SELECT * FROM factions WHERE id = ?', [factionId], function (err, rows) {
+        databases.getMysql('cache').query('SELECT * FROM factions WHERE ' + key + ' = ?', [value], function (err, rows) {
             if (err) {
                 console.error(err)
                 return res.status(500).json({status: false, error: "Unable to get factions."})
