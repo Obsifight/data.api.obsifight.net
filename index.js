@@ -6,6 +6,7 @@ var express = require("express")
 var bodyParser = require('body-parser')
 var factionsDataHandler = require("./api/factions/dataHandler")
 var factionGraphDataHandler = require("./api/factions/graphDataHandler")
+var successDataHandler = require("./api/successDataHandler")
 
 var app = express()
 app.use(bodyParser.urlencoded({extended: true}))
@@ -51,7 +52,13 @@ app.get('/factions/refresh', function () {
 app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', factionsDataHandler.displayFaction)
 app.get('/factions/:name([A-Za-z0-9-_]+)', factionsDataHandler.displayFaction)
 app.get('/factions/search/user/:username', factionsDataHandler.searchUser)
-app.get('/factions/:factionId/graph', factionGraphDataHandler.displayFaction)
+app.get('/factions/:factionId/success', successDataHandler.faction)
+app.get('/factions/:factionId/graph', factionGraphDataHandler.displayFaction) // ressources
+
+// TODO :
+// app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', usersDataHandler.displayUser)
+// app.get('/users/:name([A-Za-z0-9-_]+)', usersDataHandler.displayUser)
+// app.get('/users/:uuid/success', successDataHandler.user)
 
 // ==========
 // HANDLE WEB
