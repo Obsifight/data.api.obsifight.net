@@ -1,7 +1,7 @@
 {
     "apps" : [
         {
-            "name"      : "factions.api.obsifight.net",
+            "name"      : "data.api.obsifight.net",
             "script"    : "index.js",
             "exec_mode": "fork",
             "instances": 1,
