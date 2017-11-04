@@ -3,7 +3,7 @@ var _ = require('underscore')
 var async = require('async')
 var successList = [
     {
-        name: 'ONLINE_TIME',
+        name: 'online.time',
         values: [50, 100, 250, 500, 1000],
         type: ['user'],
         get: function (uuid, next) {
@@ -20,7 +20,7 @@ var successList = [
         }
     },
     {
-        name: 'KILLS',
+        name: 'kills',
         values: [10, 50, 100, 500, 1000],
         type: ['user', 'faction'],
         get: function (uuid, next) {
@@ -37,56 +37,56 @@ var successList = [
         }
     },
     {
-        name: 'SKINS',
+        name: 'skin',
         type: ['user'],
         have: function (uuid, next) { // TODO
             next(false)
         }
     },
     {
-        name: 'CAPE',
+        name: 'cape',
         type: ['user'],
         have: function (uuid, next) { // TODO
             next(false)
         }
     },
     {
-        name: 'ONLINE_VERSION_4',
+        name: 'online.version.4',
         type: ['user'],
         have: function (uuid, next) { // TODO
             next(false)
         }
     },
     {
-        name: 'ONLINE_VERSION_5',
+        name: 'online.version.5',
         type: ['user'],
         have: function (uuid, next) { // TODO
             next(false)
         }
     },
     {
-        name: 'ONLINE_VERSION_6',
+        name: 'online.version.6',
         type: ['user'],
         have: function (uuid, next) { // TODO
             next(false)
         }
     },
     {
-        name: 'ONLINE_VERSION_7',
+        name: 'online.version.7',
         type: ['user'],
         have: function (uuid, next) { // TODO
             next(false)
         }
     },
     {
-        name: 'ONLINE_VERSION_8',
+        name: 'online.version.8',
         type: ['user'],
         have: function (uuid, next) { // TODO
             next(false)
         }
     },
     {
-        name: 'MONEY',
+        name: 'money',
         values: [100, 1000, 10000],
         type: ['user', 'faction'],
         get: function (uuid, next) {
