@@ -7,7 +7,7 @@ var successList = [
         values: [50, 100, 250, 500, 1000],
         type: ['user'],
         get: function (uuid, next) {
-            databases.getMysql('logblock').query("SELECT onlinetime AS onlinetime FROM lb-players WHERE UUID = ?", [uuid], function (err, rows) {
+            databases.getMysql('logblock').query("SELECT onlinetime AS onlinetime FROM `lb-players` WHERE UUID = ?", [uuid], function (err, rows) {
                 if (err) {
                     console.error(err)
                     return next(0)
@@ -136,8 +136,10 @@ var getSuccessPercentagesFromUser = function (uuid, next, type) {
         } else { // percentages
             success.get(uuid, function (value) {
                 result[success.name] = {}
+                var percentage = 0
                 for (var i = 0; i < success.values.length; i++) {
-                    result[success.name][success.values[i]] = Math.round(((value / success.values[i]) * 100) * 100) / 100
+                    percentage = Math.round(((value / success.values[i]) * 100) * 100) / 100
+                    result[success.name][success.values[i]] = (percentage > 100) ? 100 : percentage
                 }
                 callback()
             })
