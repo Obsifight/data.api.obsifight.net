@@ -71,11 +71,95 @@ module.exports = {
                 databases.closeMysql('blockstats')
             })
         })
-        // TODO : Remove old stats
+        // Remove old (1 week max)
+        databases.getMysql('cache').query('DELETE stats.*, materials_stats.* FROM stats ' +
+            'INNER JOIN materials_stats ON materials_stats.stats_id = stats.id ' +
+            'WHERE stats.created_at <= DATE_SUB(NOW(), INTERVAL 1 WEEK);', function (err) {
+            if (err)
+                console.error(err)
+        });
     },
 
+    /*
+
+    {
+        counts: {
+            position: "+3",
+            money: 0,
+        }
+        graphs: {
+            materials: {
+                x_axis: ["days.monday", ...],
+                data: [{
+                    name: 'Installation',
+                    data: [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
+                }, {
+                    name: 'Manufacturing',
+                    data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
+                }]
+            }
+        }
+        last_update: "YYYY-m-d H:i:s",
+        update_range: "0, 0, 0, 0, 30, 0, 0"
+    }
+
+     */
     displayFaction: function (req, res) {
-        // TODO
+        // Find faction on cache
+        databases.getMysql('cache').query('SELECT stats.id, stats.position, stats.money, stats.created_at FROM stats WHERE stats.faction_id = ? ORDER BY created_at',
+            [req.params.factionId], function (err, statsList) {
+            if (err) {
+                console.error(err)
+                return res.status(500).json({status: false, error: "Unable to get factions."})
+            }
+            if (statsList.length === 0)
+                return res.status(404).json({status: false, error: "Faction not found."})
+            var data = {
+                counts: {
+                    position: statsList[0].position - statsList[statsList.length - 1].position,
+                    money: statsList[statsList.length - 1].money - statsList[0].money
+                },
+                graphs: {
+                    materials: {
+                        x_axis: [],
+                        data: []
+                    }
+                },
+                last_update: statsList[statsList.length - 1].created_at,
+                update_range: "0, 0, 0, 0, 0, 30, 0"
+            }
+
+            async.eachSeries(statsList, function (stats, next) {
+                data.graphs.materials.x_axis.push(stats.created_at)
+                // Get materials
+                databases.getMysql('cache').query('SELECT name, count FROM materials_stats WHERE stats_id = ?', [stats.id], function (err, materials) {
+                    if (err) {
+                        console.error(err)
+                        return res.status(500).json({status: false, error: "Unable to get factions materials."})
+                    }
+                    async.each(materials, function (material, callback) {
+                        // Add to graph if first call
+                        if (getIndexFromSeries(material.name.toLowerCase(), data.graphs.materials.data) === -1)
+                            data.graphs.materials.data.push({
+                                name: material.name.toLowerCase(),
+                                data: []
+                            })
+                        data.graphs.materials.data[getIndexFromSeries(material.name.toLowerCase(), data.graphs.materials.data)].data.push(material.count)
+                        callback()
+                    }, function () {
+                        next()
+                    })
+                })
+            }, function () {
+              res.json({status: true, data: data})
+            })
+        })
+        var getIndexFromSeries = function (name, series) {
+            for (var i = 0; i < series.length; i++)
+                if (series[i].name === name)
+                    return i;
+            return -1;
+        }
     }
 
 }

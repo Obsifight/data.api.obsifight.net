@@ -94,9 +94,9 @@ module.exports = {
                                         return console.error(err)
 
                                     // save data
-                                    deathsCount += results[0].deaths
-                                    killsCount += results[0].kills
-                                    moneyCount += results[1].money
+                                    deathsCount += results[0] ? results[0].deaths : 0
+                                    killsCount += results[0] ? results[0].kills : 0
+                                    moneyCount += results[1] ? results[1].money : 0
 
                                     callback()
                                 })
