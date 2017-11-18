@@ -1,4 +1,5 @@
-var async = require('async');
+var databases = require('../../config/db')
+var async = require('async')
 
 module.exports = {
 
@@ -39,13 +40,13 @@ module.exports = {
                                     materials[i] = {
                                         name: rows[i].name,
                                         count: rows[i].count,
-                                        stats_id: stats[0].id
+                                        stats_id: stats.insertId
                                     }
                                 else
                                     materials[i] = {
                                         name: rows[i].name,
                                         count: 0,
-                                        stats_id: stats[0].id
+                                        stats_id: stats.insertId
                                     }
                             }
 
@@ -53,8 +54,8 @@ module.exports = {
                             var keys = Object.keys(materials[0])
                             var keysString = keys.join(', ')
                             var values = []
-                            for (var i = 0; i < data.length; i++) {
-                                values.push(_.values(data[i]))
+                            for (var i = 0; i < materials.length; i++) {
+                                values.push(_.values(materials[i]))
                             }
 
                             databases.getMysql('cache').query("INSERT INTO materials_stats (" + keysString + ") VALUES ?", [values], function (err) {
