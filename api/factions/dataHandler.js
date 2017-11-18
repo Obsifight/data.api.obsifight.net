@@ -57,7 +57,7 @@ module.exports = {
                                     result.push(claim)
                                 return result
                             }, []).length || 0
-                            result.outpost_count = 0 // TODO
+                            result.outpost_count = faction.outpost
 
                             // Get kills and deaths data
                             var deathsCount = 0

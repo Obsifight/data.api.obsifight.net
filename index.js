@@ -28,7 +28,10 @@ new CronJob("0 */15 * * * *", function () {
 }, true, "Europe/Paris")
 
 console.log("Start factions graph daemon...")
-new CronJob("0 0 0 * * 0", factionGraphDataHandler.generate, function () {
+new CronJob("0 */30 * * * *", function () {
+    console.log("Factions graph data are updating...")
+    factionGraphDataHandler.generate()
+}, function () {
     console.log("Factions graph data are updated!")
 }, true, "Europe/Paris")
 
@@ -45,10 +48,6 @@ app.all('/', function (req, res) {
 })
 
 app.get('/factions', factionsDataHandler.display)
-app.get('/factions/refresh', function () {
-    console.log("Factions data are updating...")
-    factionsDataHandler.generate()
-})
 app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', factionsDataHandler.displayFaction)
 app.get('/factions/:name([A-Za-z0-9-_]+)', factionsDataHandler.displayFaction)
 app.get('/factions/search/user/:username', factionsDataHandler.searchUser)
@@ -59,6 +58,16 @@ app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 // app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', usersDataHandler.displayUser)
 // app.get('/users/:name([A-Za-z0-9-_]+)', usersDataHandler.displayUser)
 app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/success', successDataHandler.user)
+
+// TODO: DEV
+app.get('/factions/refresh', function () {
+    console.log("Factions data are updating...")
+    factionsDataHandler.generate()
+})
+app.get('/factions/stats/refresh', function () {
+    console.log("Factions stats data are updating...")
+    factionGraphDataHandler.generate()
+})
 
 // ==========
 // HANDLE WEB
