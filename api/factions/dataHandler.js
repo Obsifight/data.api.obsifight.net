@@ -277,7 +277,7 @@ module.exports = {
                             players.push({
                                 uuid: rawPlayers[i]._id.toString(),
                                 username: usersUsernameByUUID[rawPlayers[i]._id.toString()],
-                                role: rawPlayers[i].role,
+                                role: (rawPlayers[i].role) ? rawPlayers[i].role : 'member',
                                 power: rawPlayers[i].power
                             })
                         }
@@ -358,7 +358,10 @@ module.exports = {
                         return res.status(404).json({status: false, error: "User not found."})
                     var player = {
                         power: players[0].power,
-                        faction: {}
+                        faction: {
+                            id: players[0].factionId,
+                            role: players[0].role
+                        }
                     }
 
                     var next = function () {
@@ -367,7 +370,6 @@ module.exports = {
                     }
 
                     if (players[0].factionId) {
-                        player.faction.id = players[0].factionId
                         // Find faction on cache
                         databases.getMysql('cache').query('SELECT * FROM factions WHERE id = ?', [player.faction.id], function (err, rows) {
                             if (err) {
