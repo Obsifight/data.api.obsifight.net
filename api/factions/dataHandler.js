@@ -10,6 +10,21 @@ module.exports = {
 
     maxPower: 10,
 
+    count: function (req, res)
+    {
+        var count = 0
+        databases.getMongo(function (mongoDatabase) {
+            mongoDatabase.collection('factions_faction').count(function(err, nbDocs) {
+                if (err)
+                    console.error(err)
+                else
+                    count = nbDocs
+                res.json({status: true, data: {count: count}})
+                databases.closeMongo()
+            })
+        })
+    },
+
     generate: function () {
         var self = this
         var results = []

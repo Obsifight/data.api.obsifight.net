@@ -49,12 +49,14 @@ app.all('/', function (req, res) {
 })
 
 app.get('/factions', factionsDataHandler.display)
+app.get('/factions/count', factionsDataHandler.count)
 app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', factionsDataHandler.displayFaction)
 app.get('/factions/:name([A-Za-z0-9-_]+)', factionsDataHandler.displayFaction)
 app.get('/factions/search/user/:username', factionsDataHandler.searchUser)
 app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/success', successDataHandler.faction)
 app.get('/factions/:factionId([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/graph', factionGraphDataHandler.displayFaction) // ressources
 
+app.get('/users/count/fights', usersDataHandler.countFights)
 app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', usersDataHandler.displayUser)
 app.get('/users/:name([A-Za-z0-9-_]+)', usersDataHandler.displayUser)
 app.get('/users/:uuid([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/success', successDataHandler.user)

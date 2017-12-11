@@ -142,6 +142,20 @@ module.exports = {
                 return res.json({status: true, data: data})
             })
         }
+    },
+
+    countFights: function (req, res) {
+        var count = 0;
+        databases.getMysql('killstats').query(
+            'SELECT SUM(kills) AS count FROM obsikillstats_st',
+            function (err, rows) {
+                if (err)
+                    console.error(err)
+                else
+                    count = rows[0].count
+                res.json({status: true, data: {count: count}})
+                databases.closeMysql('killstats')
+            })
     }
 
 }
