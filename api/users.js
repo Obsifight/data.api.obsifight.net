@@ -1,5 +1,5 @@
 var config = require('../config/config')
-var https = require('https')
+var http = require('http')
 var async = require('async')
 var Api = require('obsifight-libs')
 var api = new Api(config.api.credentials.user, config.api.credentials.password)
@@ -42,13 +42,13 @@ module.exports = {
             async.parallel([
                 // Check skin
                 function (next) {
-                    https.request({method: 'GET', host: 'skins.obsifight.net', path: '/skins/' + username + '.png'}, function (result) {
+                    http.request({method: 'GET', host: 'skins.obsifight.net', path: '/skins/' + username + '.png'}, function (result) {
                         next(result.statusCode === 200)
                     })
                 },
                 // Check cape
                 function (next) {
-                    https.request({method: 'GET', host: 'skins.obsifight.net', path: '/capes/' + username + '_cape.png'}, function (result) {
+                    http.request({method: 'GET', host: 'skins.obsifight.net', path: '/capes/' + username + '_cape.png'}, function (result) {
                         next(result.statusCode === 200)
                     })
                 },
@@ -80,7 +80,15 @@ module.exports = {
                 },
                 // Blocks
                 function (next) {
-                    databases.getMysql('logblock').query('', [uuid], function (err, rows) { // TODO: sql query
+                    databases.getMysql('logblock').query('SELECT ' +
+                        '(SELECT COUNT(`lb-FACTION`.`id`) AS `broke` FROM `lb-FACTION` ' +
+                        'INNER JOIN `lb-players` ON `lb-players`.`UUID` = ?' +
+                        'WHERE `lb-FACTION`.`playerid` = `lb-players`.`playerid` AND `lb-FACTION`.`replaced` = 0' +
+                        ') AS `broke`,' +
+                        '(SELECT COUNT(`lb-FACTION`.`id`) AS `placed` FROM `lb-FACTION` ' +
+                        'INNER JOIN `lb-players` ON `lb-players`.`UUID` = ?' +
+                        'WHERE `lb-FACTION`.`playerid` = `lb-players`.`playerid` AND `lb-FACTION`.`replaced` = 1' +
+                        ') AS `placed`', [uuid, uuid], function (err, rows) {
                         if (err)
                             return next(err)
                         if (rows.length === 0)
@@ -90,7 +98,7 @@ module.exports = {
                 },
                 // Online
                 function (next) {
-                    databases.getMysql('logblock').query('', [uuid], function (err, rows) { // TODO: sql query
+                    databases.getMysql('logblock').query('SELECT lastlogin AS last, onlinetime AS online FROM `lb-players` WHERE UUID = ?', [uuid], function (err, rows) {
                         if (err)
                             return next(err)
                         if (rows.length === 0)
@@ -119,6 +127,7 @@ module.exports = {
 
                 databases.closeMysql('killstats');
                 databases.closeMysql('logblock');
+                databases.closeMysql('web_v' + config.current_version);
                 return res.json({status: true, data: data})
             })
         }
