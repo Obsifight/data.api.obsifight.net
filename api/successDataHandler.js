@@ -4,7 +4,7 @@ var _ = require('underscore')
 var async = require('async')
 var Api = require('obsifight-libs')
 var api = new Api(config.api.credentials.user, config.api.credentials.password)
-var http = require('http')
+var request = require('request')
 
 var successList = [
     {
@@ -19,7 +19,7 @@ var successList = [
                 }
                 if (rows.length === 0)
                     return next(0)
-                next(rows[0].onlinetime)
+                next(Math.round(rows[0].onlinetime / 3600))
                 databases.closeMysql('logblock')
             })
         }
@@ -38,132 +38,6 @@ var successList = [
                     return next(0)
                 next(rows[0].kills)
                 databases.closeMysql('killstats')
-            })
-        }
-    },
-    {
-        name: 'skin',
-        type: ['user'],
-        have: function (uuid, next) { // TODO
-            api.request({
-                route: '/user/from/uuid/' + uuid,
-                method: 'get'
-            }, function (err, result) {
-                if (err || !result.status) {
-                    console.error(err || result.error || result.body)
-                    return next(false)
-                }
-                http.request({method: 'GET', host: 'skins.obsifight.net', path: '/skins/' + username + '.png'}, function (result) {
-                    next(result.statusCode === 200)
-                })
-            })
-        }
-    },
-    {
-        name: 'cape',
-        type: ['user'],
-        have: function (uuid, next) { // TODO
-            api.request({
-                route: '/user/from/uuid/' + uuid,
-                method: 'get'
-            }, function (err, result) {
-                if (err || !result.status) {
-                    console.error(err || result.error || result.body)
-                    return next(false)
-                }
-                http.request({method: 'GET', host: 'skins.obsifight.net', path: '/capes/' + username + '_cape.png'}, function (result) {
-                    next(result.statusCode === 200)
-                })
-            })
-        }
-    },
-    {
-        name: 'online.version.4',
-        type: ['user'],
-        have: function (uuid, next) {
-            databases.getMysql('web_v' + config.current_version).query("SELECT users_versions.id FROM users_versions " +
-                "INNER JOIN users ON users.uuid = ? " +
-                "WHERE users_versions.user_id = users.id AND version = 4", [uuid], function (err, rows) {
-                if (err) {
-                    console.error(err)
-                    return next(false)
-                }
-                if (rows.length === 0)
-                    return next(false)
-                next(true)
-                databases.closeMysql('web_v' + config.current_version)
-            })
-        }
-    },
-    {
-        name: 'online.version.5',
-        type: ['user'],
-        have: function (uuid, next) {
-            databases.getMysql('web_v' + config.current_version).query("SELECT users_versions.id FROM users_versions " +
-                "INNER JOIN users ON users.uuid = ? " +
-                "WHERE users_versions.user_id = users.id AND version = 5", [uuid], function (err, rows) {
-                if (err) {
-                    console.error(err)
-                    return next(false)
-                }
-                if (rows.length === 0)
-                    return next(false)
-                next(true)
-                databases.closeMysql('web_v' + config.current_version)
-            })
-        }
-    },
-    {
-        name: 'online.version.6',
-        type: ['user'],
-        have: function (uuid, next) {
-            databases.getMysql('web_v' + config.current_version).query("SELECT users_versions.id FROM users_versions " +
-                "INNER JOIN users ON users.uuid = ? " +
-                "WHERE users_versions.user_id = users.id AND version = 6", [uuid], function (err, rows) {
-                if (err) {
-                    console.error(err)
-                    return next(false)
-                }
-                if (rows.length === 0)
-                    return next(false)
-                next(true)
-                databases.closeMysql('web_v' + config.current_version)
-            })
-        }
-    },
-    {
-        name: 'online.version.7',
-        type: ['user'],
-        have: function (uuid, next) {
-            databases.getMysql('web_v' + config.current_version).query("SELECT users_versions.id FROM users_versions " +
-                "INNER JOIN users ON users.uuid = ? " +
-                "WHERE users_versions.user_id = users.id AND version = 7", [uuid], function (err, rows) {
-                if (err) {
-                    console.error(err)
-                    return next(false)
-                }
-                if (rows.length === 0)
-                    return next(false)
-                next(true)
-                databases.closeMysql('web_v' + config.current_version)
-            })
-        }
-    },
-    {
-        name: 'online.version.8',
-        type: ['user'],
-        have: function (uuid, next) {
-            databases.getMysql('web_v' + config.current_version).query("SELECT users_versions.id FROM users_versions " +
-                "INNER JOIN users ON users.uuid = ? " +
-                "WHERE users_versions.user_id = users.id AND version = 8", [uuid], function (err, rows) {
-                if (err) {
-                    console.error(err)
-                    return next(false)
-                }
-                if (rows.length === 0)
-                    return next(false)
-                next(true)
-                databases.closeMysql('web_v' + config.current_version)
             })
         }
     },

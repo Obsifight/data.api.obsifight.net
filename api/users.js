@@ -1,5 +1,5 @@
 var config = require('../config/config')
-var http = require('http')
+var request = require('request')
 var async = require('async')
 var Api = require('obsifight-libs')
 var api = new Api(config.api.credentials.user, config.api.credentials.password)
@@ -42,14 +42,22 @@ module.exports = {
             async.parallel([
                 // Check skin
                 function (next) {
-                    http.request({method: 'GET', host: 'skins.obsifight.net', path: '/skins/' + username + '.png'}, function (result) {
-                        next(result.statusCode === 200)
+                    request.get({
+                        url: 'http://skins.obsifight.net/skins/' + username + '.png'
+                    }, function (err, httpResponse) {
+                        if (err)
+                            return next(false)
+                        next(undefined, httpResponse.statusCode === 200)
                     })
                 },
                 // Check cape
                 function (next) {
-                    http.request({method: 'GET', host: 'skins.obsifight.net', path: '/capes/' + username + '_cape.png'}, function (result) {
-                        next(result.statusCode === 200)
+                    request.get({
+                        url: 'http://skins.obsifight.net/capes/' + username + '_cape.png'
+                    }, function (err, httpResponse) {
+                        if (err)
+                            return next(false)
+                        next(undefined, httpResponse.statusCode === 200)
                     })
                 },
                 // Kills / deaths
@@ -58,7 +66,10 @@ module.exports = {
                         'SELECT kills as kills, morts as deaths FROM obsikillstats_st WHERE player = "' + uuid + '" LIMIT 1',
                     function (err, rows) {
                         if (err)
+                        {
+                            console.error(err)
                             return next(err)
+                        }
                         next(undefined, rows[0])
                     })
                 },
@@ -98,7 +109,7 @@ module.exports = {
                 },
                 // Online
                 function (next) {
-                    databases.getMysql('logblock').query('SELECT lastlogin AS last, onlinetime AS online FROM `lb-players` WHERE UUID = ?', [uuid], function (err, rows) {
+                    databases.getMysql('logblock').query('SELECT lastlogin AS last, onlinetime AS total FROM `lb-players` WHERE UUID = ?', [uuid], function (err, rows) {
                         if (err)
                             return next(err)
                         if (rows.length === 0)
@@ -109,12 +120,12 @@ module.exports = {
             ], function (err, results) {
                 var data = {
                     online: {
-                        total_time: results[5].total || 0,
-                        last_connection: results[5].last || 0
+                        total_time: Math.round(results[5] && results[5].total / 3600) || 0,
+                        last_connection: results[5] && results[5].last || 0
                     },
                     stats: {
-                        kills: results[2].kills || 0,
-                        deaths: results[2].deaths || 0,
+                        kills: results[2] && results[2].kills || 0,
+                        deaths: results[2] && results[2].deaths || 0,
                         blocks: {
                             placed: results[4].placed || 0,
                             broken: results[4].broke || 0
