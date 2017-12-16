@@ -84,7 +84,7 @@ module.exports = {
 
                     // Add data
                     async.each(factions, function (faction, next) {
-                        if (['safezone', 'warzone', 'none'].indexOf(faction._id.toString()) !== -1)
+                        if (faction.flags && faction.flags.permanent)
                             return next()
                         var result = {}
 
