@@ -29,10 +29,7 @@ module.exports = {
                         function (err, rows) {
                             if (err) {
                                 console.error(err)
-                                return res.status(500).json({
-                                    status: false,
-                                    error: "Unable to find faction's materials"
-                                })
+                                return
                             }
 
                             var materials = []

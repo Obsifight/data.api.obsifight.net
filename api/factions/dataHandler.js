@@ -6,9 +6,49 @@ var DatatableQueryBuilder = require('node-datatable')
 var Api = require('obsifight-libs')
 var api = new Api(config.api.credentials.user, config.api.credentials.password)
 
+function getFactionMaterials(faction, next)
+{
+    databases.getMysql('blockstats').query("SELECT material.name AS name, faction_material_count.count AS count\n" +
+        "FROM material\n" +
+        "LEFT JOIN faction_material_count\n" +
+        "ON faction_material_count.material_id = material.id AND faction_material_count.faction_id = ?", [faction.id],
+        function (err, rows) {
+            if (err)
+                return (err)
+
+            faction.materials = {}
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].count)
+                    faction.materials[rows[i].name] = rows[i].count
+                else
+                    faction.materials[rows[i].name] = 0
+            }
+
+            // Get spawners count
+            databases.getMysql('blockstats').query("SELECT spawner.name AS name, faction_spawner_count.count AS count\n" +
+                "FROM spawner\n" +
+                "LEFT JOIN faction_spawner_count\n" +
+                "ON faction_spawner_count.spawner_id = spawner.id AND faction_spawner_count.faction_id = ?", [faction.id],
+                function (err, rows) {
+                    if (err)
+                        return (err)
+
+                    faction.spawners = {}
+                    for (var i = 0; i < rows.length; i++) {
+                        if (rows[i].count)
+                            faction.spawners[rows[i].name] = rows[i].count
+                        else
+                            faction.spawners[rows[i].name] = 0
+                    }
+
+                    next(undefined, faction)
+                })
+        })
+}
+
 module.exports = {
 
-    maxPower: 10,
+    maxPower: 8,
 
     count: function (req, res)
     {
@@ -77,7 +117,8 @@ module.exports = {
                             // Get kills and deaths data
                             var deathsCount = 0
                             var killsCount = 0
-                            var moneyCount = 0;
+                            var moneyCount = 0
+                            var kothCount = 0
                             async.each(players, function (player, callback) {
                                 // get kills/deaths and money
                                 async.parallel([
@@ -102,6 +143,10 @@ module.exports = {
                                                     return cb(err)
                                                 cb(undefined, rows[0])
                                             })
+                                    },
+
+                                    function (cb) { // TODO
+                                        cb(undefined, {count: 0});
                                     }
 
                                 ], function (err, results) {
@@ -112,6 +157,7 @@ module.exports = {
                                     deathsCount += results[0] ? results[0].deaths : 0
                                     killsCount += results[0] ? results[0].kills : 0
                                     moneyCount += results[1] ? results[1].money : 0
+                                    kothCount += results[2] ? results[2].count : 0
 
                                     callback()
                                 })
@@ -123,12 +169,17 @@ module.exports = {
                                 result.kills_count = killsCount
                                 result.deaths_count = deathsCount
                                 result.money = moneyCount
+                                result.koth_count = kothCount
 
                                 // Set score
-                                result.score = calculScore(result)
+                                calculScore(result, function (score) {
+                                    result.score = score
+                                    delete result.materials
+                                    delete result.spawners
 
-                                results.push(result)
-                                next()
+                                    results.push(result)
+                                    next()
+                                })
                             })
                         }
                     }, function (err) {
@@ -170,12 +221,81 @@ module.exports = {
 
                 cacheDb.query("DELETE FROM factions", next)
             }
-            var calculScore = function (faction) {
+            var calculScore = function (faction, cb) {
                 var score = 0
 
-                score += faction.kills_count
+                // EVENTS
+                score += faction.koth_count * 250
 
-                return score
+                // KILLS
+                if (faction.kills_count < 250)
+                    score += faction.kills_count * 0.5
+                else if (faction.kills_count < 500)
+                    score += faction.kills_count * 0.8
+                else if (faction.kills_count < 1000)
+                    score += faction.kills_count * 1
+                else
+                    score += faction.kills_count * 1.2
+
+                // DEATHS
+                if (faction.deaths_count < 250)
+                    score -= faction.deaths_count * 0.8
+                else if (faction.deaths_count < 500)
+                    score -= faction.deaths_count * 1
+                else if (faction.deaths_count < 1000)
+                    score -= faction.deaths_count * 1.2
+                else
+                    score -= faction.deaths_count * 1.5
+
+                // MAX POWER <=> USERS COUNT
+                score += (faction.max_power / self.maxPower) * 5
+
+                // MONEY
+                if (faction.money < 25000)
+                    score += faction.money * 0.001
+                else if (faction.money < 50000)
+                    score += faction.money * 0.002
+                else if (faction.money < 100000)
+                    score += faction.money * 0.004
+                else if (faction.money < 250000)
+                    score += faction.money * 0.008
+                else
+                    score += faction.money * 0.016
+
+                // OUTPOSTS
+                score += faction.outpost_count * 350
+
+                // CLAIMS
+                score += faction.claims_count * 1
+
+                // MATERIALS
+                getFactionMaterials(faction, function (err, f) {
+                    if (err) {
+                        console.error(err)
+                        return cb(score)
+                    }
+                    // close connections
+                    databases.closeMysql('blockstats')
+
+                    score += f.materials.INGOT_MANGANESE * 0.0001
+                    score += f.materials.MANGANESE_BLOCK * 0.0009
+                    score += f.materials.GARNET_INGOT * 0.00015
+                    score += f.materials.GARNET_BLOCK * 0.00135
+                    score += f.materials.AMETHYST_INGOT * 0.002
+                    score += f.materials.AMETHYST_BLOCK * 0.018
+                    score += f.materials.TITANIUM_INGOT * 0.003
+                    score += f.materials.TITANIUM_BLOCK * 0.027
+                    score += f.materials.OBSIDIAN_INGOT * 0.003
+                    score += f.materials.OBSIDIAN_BLOCK * 0.027
+                    score += f.materials.INGOT_XENOTIUM * 3
+                    score += f.materials.XENOTIUM_BLOCK * 27
+                    score += f.materials.TNT * 0.01
+                    score += f.materials.XTNT * 9
+                    score += f.materials.ENDER_PEARL * 0.005
+                    score += f.materials.GOLDEN_APPLE * 0.1
+
+                    return cb(score)
+                })
             }
             var closeDatabases = function () {
                 try {
@@ -240,6 +360,7 @@ module.exports = {
     },
 
     displayFaction: function (req, res) {
+        var self = this
         // Check request
         var key, value
         if (req.params.factionId) {
@@ -299,51 +420,19 @@ module.exports = {
                         faction.players = players
 
                         // Get materials
-                        databases.getMysql('blockstats').query("SELECT material.name AS name, faction_material_count.count AS count\n" +
-                            "FROM material\n" +
-                            "LEFT JOIN faction_material_count\n" +
-                            "ON faction_material_count.material_id = material.id AND faction_material_count.faction_id = ?", [faction.id],
-                        function (err, rows) {
+                        getFactionMaterials(faction, function (err, faction) {
                             if (err) {
                                 console.error(err)
                                 return res.status(500).json({status: false, error: "Unable to find faction's materials"})
                             }
 
-                            faction.materials = {}
-                            for (var i = 0; i < rows.length; i++) {
-                                if (rows[i].count)
-                                    faction.materials[rows[i].name] = rows[i].count
-                                else
-                                    faction.materials[rows[i].name] = 0
-                            }
+                            // close connections
+                            databases.closeMysql('cache')
+                            databases.closeMysql('blockstats')
+                            databases.closeMongo()
 
-                            // Get spawners count
-                            databases.getMysql('blockstats').query("SELECT spawner.name AS name, faction_spawner_count.count AS count\n" +
-                                "FROM spawner\n" +
-                                "LEFT JOIN faction_spawner_count\n" +
-                                "ON faction_spawner_count.spawner_id = spawner.id AND faction_spawner_count.faction_id = ?", [faction.id],
-                            function (err, rows) {
-                                if (err) {
-                                    console.error(err)
-                                    return res.status(500).json({status: false, error: "Unable to find faction's spawners"})
-                                }
-
-                                faction.spawners = {}
-                                for (var i = 0; i < rows.length; i++) {
-                                    if (rows[i].count)
-                                        faction.spawners[rows[i].name] = rows[i].count
-                                    else
-                                        faction.spawners[rows[i].name] = 0
-                                }
-
-                                // close connections
-                                databases.closeMysql('cache')
-                                databases.closeMysql('blockstats')
-                                databases.closeMongo()
-
-                                // send
-                                res.json({status: true, data: faction})
-                            })
+                            // send
+                            res.json({status: true, data: faction})
                         })
                     })
                 })
@@ -404,6 +493,6 @@ module.exports = {
                 })
             })
         })
-    }
+    },
 
 }
