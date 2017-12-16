@@ -277,8 +277,8 @@ module.exports = {
                     // close connections
                     databases.closeMysql('blockstats')
 
-                    score += f.materials.INGOT_MANGANESE * 0.0001
-                    score += f.materials.MANGANESE_BLOCK * 0.0009
+                    //score += f.materials.INGOT_MANGANESE * 0.0001
+                    //score += f.materials.MANGANESE_BLOCK * 0.0009
                     score += f.materials.GARNET_INGOT * 0.00015
                     score += f.materials.GARNET_BLOCK * 0.00135
                     score += f.materials.AMETHYST_INGOT * 0.002
