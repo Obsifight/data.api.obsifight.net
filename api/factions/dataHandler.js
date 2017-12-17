@@ -11,7 +11,8 @@ function getFactionMaterials(faction, next)
     databases.getMysql('blockstats').query("SELECT material.name AS name, faction_material_count.count AS count\n" +
         "FROM material\n" +
         "LEFT JOIN faction_material_count\n" +
-        "ON faction_material_count.material_id = material.id AND faction_material_count.faction_id = ?", [faction.id],
+        "ON faction_material_count.material_id = material.id AND faction_material_count.faction_id = ? " +
+        "WHERE material.name IN ('GARNET_INGOT', 'GARNET_BLOCK', 'AMETHYST_INGOT', 'AMETHYST_BLOCK', 'TITANIUM_INGOT', 'TITANIUM_BLOCK', 'OBSIDIAN_INGOT', 'OBSIDIAN_BLOCK', 'INGOT_XENOTIUM', 'XENOTIUM_BLOCK', 'TNT', 'XTNT', 'ENDER_PEARL', 'GOLDEN_APPLE')", [faction.id],
         function (err, rows) {
             if (err)
                 return (err)

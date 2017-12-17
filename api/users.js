@@ -95,11 +95,11 @@ module.exports = {
                         '(SELECT COUNT(`lb-FACTION`.`id`) AS `broke` FROM `lb-FACTION` ' +
                         'INNER JOIN `lb-players` ON `lb-players`.`UUID` = ?' +
                         'WHERE `lb-FACTION`.`playerid` = `lb-players`.`playerid` AND `lb-FACTION`.`replaced` = 0' +
-                        ') AS `broke`,' +
+                        ') AS `placed`,' +
                         '(SELECT COUNT(`lb-FACTION`.`id`) AS `placed` FROM `lb-FACTION` ' +
                         'INNER JOIN `lb-players` ON `lb-players`.`UUID` = ?' +
-                        'WHERE `lb-FACTION`.`playerid` = `lb-players`.`playerid` AND `lb-FACTION`.`replaced` = 1' +
-                        ') AS `placed`', [uuid, uuid], function (err, rows) {
+                        'WHERE `lb-FACTION`.`playerid` = `lb-players`.`playerid` AND `lb-FACTION`.`replaced` > 0' +
+                        ') AS `broke`', [uuid, uuid], function (err, rows) {
                         if (err)
                             return next(err)
                         if (rows.length === 0)

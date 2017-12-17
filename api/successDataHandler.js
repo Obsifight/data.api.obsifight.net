@@ -132,6 +132,7 @@ var getSuccessPercentagesFromFaction = function (factionId, next) {
                                     result[name][value] += successList[name][value]
                                 else
                                     result[name][value] = successList[name][value]
+                                result[name][value] = result[name][value] > 100 ? 100 : result[name][value]
                             }
                         }
                     }
