@@ -173,8 +173,9 @@ module.exports = {
                                 result.koth_count = kothCount
 
                                 // Set score
-                                calculScore(result, function (score) {
+                                calculScore(result, function (score, details) {
                                     result.score = score
+                                    result.details = JSON.stringify(details)
                                     delete result.materials
                                     delete result.spawners
 
@@ -224,50 +225,64 @@ module.exports = {
             }
             var calculScore = function (faction, cb) {
                 var score = 0
+                var tmp = 0
+                var details = {}
 
                 // EVENTS
                 score += faction.koth_count * 250
 
                 // KILLS
                 if (faction.kills_count < 250)
-                    score += faction.kills_count * 0.5
+                    tmp = faction.kills_count * 0.5
                 else if (faction.kills_count < 500)
-                    score += faction.kills_count * 0.8
+                    tmp = faction.kills_count * 0.8
                 else if (faction.kills_count < 1000)
-                    score += faction.kills_count * 1
+                    tmp = faction.kills_count * 1
                 else
-                    score += faction.kills_count * 1.2
+                    tmp = faction.kills_count * 1.2
+                score += tmp
+                details.kills = tmp
 
                 // DEATHS
                 if (faction.deaths_count < 250)
-                    score -= faction.deaths_count * 0.8
+                    tmp = faction.deaths_count * 0.8
                 else if (faction.deaths_count < 500)
-                    score -= faction.deaths_count * 1
+                    tmp = faction.deaths_count * 1
                 else if (faction.deaths_count < 1000)
-                    score -= faction.deaths_count * 1.2
+                    tmp = faction.deaths_count * 1.2
                 else
-                    score -= faction.deaths_count * 1.5
+                    tmp = faction.deaths_count * 1.5
+                score -= tmp
+                details.deaths = -tmp
 
                 // MAX POWER <=> USERS COUNT
-                score += (faction.max_power / self.maxPower) * 5
+                tmp = (faction.max_power / self.maxPower) * 5
+                score += tmp
+                details.max_power = tmp
 
                 // MONEY
                 if (faction.money < 25000)
-                    score += faction.money * 0.001
+                    tmp = faction.money * 0.001
                 else if (faction.money < 50000)
-                    score += faction.money * 0.002
+                    tmp = faction.money * 0.002
                 else if (faction.money < 100000)
-                    score += faction.money * 0.004
+                    tmp = faction.money * 0.004
                 else if (faction.money < 250000)
-                    score += faction.money * 0.008
+                    tmp = faction.money * 0.008
                 else
-                    score += faction.money * 0.016
+                    tmp = faction.money * 0.016
+                score += tmp
+                details.money = tmp
 
                 // OUTPOSTS
-                score += faction.outpost_count * 350
+                tmp = faction.outpost_count * 350
+                score += tmp
+                details.outpost = tmp
 
                 // CLAIMS
-                score += faction.claims_count * 1
+                tmp = faction.claims_count * 1
+                score += tmp
+                details.claims = tmp
 
                 // MATERIALS
                 getFactionMaterials(faction, function (err, f) {
@@ -280,22 +295,24 @@ module.exports = {
 
                     //score += f.materials.INGOT_MANGANESE * 0.0001
                     //score += f.materials.MANGANESE_BLOCK * 0.0009
-                    score += f.materials.GARNET_INGOT * 0.00015
-                    score += f.materials.GARNET_BLOCK * 0.00135
-                    score += f.materials.AMETHYST_INGOT * 0.002
-                    score += f.materials.AMETHYST_BLOCK * 0.018
-                    score += f.materials.TITANIUM_INGOT * 0.003
-                    score += f.materials.TITANIUM_BLOCK * 0.027
-                    score += f.materials.OBSIDIAN_INGOT * 0.003
-                    score += f.materials.OBSIDIAN_BLOCK * 0.027
-                    score += f.materials.INGOT_XENOTIUM * 3
-                    score += f.materials.XENOTIUM_BLOCK * 27
-                    score += f.materials.TNT * 0.01
-                    score += f.materials.XTNT * 9
-                    score += f.materials.ENDER_PEARL * 0.005
-                    score += f.materials.GOLDEN_APPLE * 0.1
+                    tmp = f.materials.GARNET_INGOT * 0.00015
+                    tmp += f.materials.GARNET_BLOCK * 0.00135
+                    tmp += f.materials.AMETHYST_INGOT * 0.002
+                    tmp += f.materials.AMETHYST_BLOCK * 0.018
+                    tmp += f.materials.TITANIUM_INGOT * 0.003
+                    tmp += f.materials.TITANIUM_BLOCK * 0.027
+                    tmp += f.materials.OBSIDIAN_INGOT * 0.003
+                    tmp += f.materials.OBSIDIAN_BLOCK * 0.027
+                    tmp += f.materials.INGOT_XENOTIUM * 3
+                    tmp += f.materials.XENOTIUM_BLOCK * 27
+                    tmp += f.materials.TNT * 0.01
+                    tmp += f.materials.XTNT * 9
+                    tmp += f.materials.ENDER_PEARL * 0.005
+                    tmp += f.materials.GOLDEN_APPLE * 0.1
+                    score += tmp
+                    details.materials = tmp
 
-                    return cb(score)
+                    return cb(score, details)
                 })
             }
             var closeDatabases = function () {
