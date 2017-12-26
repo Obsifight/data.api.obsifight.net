@@ -436,22 +436,12 @@ module.exports = {
                             })
                         }
                         faction.players = players
+                        // close connections
+                        databases.closeMysql('cache')
+                        databases.closeMongo()
 
-                        // Get materials
-                        getFactionMaterials(faction, function (err, faction) {
-                            if (err) {
-                                console.error(err)
-                                return res.status(500).json({status: false, error: "Unable to find faction's materials"})
-                            }
-
-                            // close connections
-                            databases.closeMysql('cache')
-                            databases.closeMysql('blockstats')
-                            databases.closeMongo()
-
-                            // send
-                            res.json({status: true, data: faction})
-                        })
+                        // send
+                        res.json({status: true, data: faction})
                     })
                 })
             })

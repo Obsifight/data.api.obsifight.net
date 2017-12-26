@@ -70,8 +70,8 @@ module.exports = {
             })
         })
         // Remove old (1 week max)
-        databases.getMysql('cache').query('DELETE stats.*, materials_stats.* FROM stats ' +
-            'INNER JOIN materials_stats ON materials_stats.stats_id = stats.id ' +
+        databases.getMysql('cache').query('DELETE stats, materials_stats FROM stats ' +
+            'LEFT JOIN materials_stats ON materials_stats.stats_id = stats.id ' +
             'WHERE stats.created_at <= DATE_SUB(NOW(), INTERVAL 1 WEEK);', function (err) {
             if (err)
                 console.error(err)
